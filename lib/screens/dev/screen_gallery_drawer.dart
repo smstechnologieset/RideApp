@@ -18,7 +18,7 @@ import '../ride/rate_driver_screen.dart';
 import '../ride/trip_receipt_screen.dart';
 import '../delivery/package_delivery_screen.dart';
 import '../food/food_delivery_screen.dart';
-import '../driver/driver_hud_screen.dart';
+import '../profile/profile_screen.dart';
 import '../history/ride_history_screen.dart';
 import '../payment/payment_methods_screen.dart';
 
@@ -130,9 +130,9 @@ class ScreenGalleryDrawer extends StatelessWidget {
                   ),
                   _buildScreenTile(
                     context,
-                    title: '9. Driver Partner Live HUD',
-                    icon: Icons.speed_rounded,
-                    screen: const DriverHudScreen(),
+                    title: '9. My Account & Settings',
+                    icon: Icons.person_rounded,
+                    screen: const ProfileScreen(),
                   ),
 
                   _buildSectionHeader('RIDE BOOKING JOURNEY'),

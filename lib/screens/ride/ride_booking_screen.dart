@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
+import '../../core/services/gebeta_maps_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../widgets/map_view_canvas.dart';
+import '../../widgets/gebeta_map_widget.dart';
 import '../../core/models/ride_models.dart';
 import 'searching_driver_screen.dart';
 
 class RideBookingScreen extends StatefulWidget {
   final String pickupAddress;
   final String destinationAddress;
+  final double pickupLat;
+  final double pickupLon;
+  final double destLat;
+  final double destLon;
 
   const RideBookingScreen({
     super.key,
     this.pickupAddress = 'Bole Bulbula, Gate 2',
     this.destinationAddress = 'Piassa, Churchill Avenue, Office 402',
+    this.pickupLat = 8.9890,
+    this.pickupLon = 38.7903,
+    this.destLat = 9.0300,
+    this.destLon = 38.7500,
   });
 
   @override
@@ -22,47 +31,83 @@ class RideBookingScreen extends StatefulWidget {
 class _RideBookingScreenState extends State<RideBookingScreen> {
   String _selectedRideId = 'standard';
   String _paymentMethod = 'telebirr'; // 'telebirr' or 'cash'
+  double _distanceKm = 8.2;
+  int _durationMinutes = 24;
+  bool _isLoadingRoute = true;
 
-  final List<RideOption> _rideOptions = const [
-    RideOption(
-      id: 'standard',
-      title: 'Zemen Standard',
-      subtitle: 'Popular • Toyota Vitz, Echo',
-      price: 185,
-      etaMinutes: 4,
-      icon: Icons.directions_car_filled_rounded,
-      capacity: '4 seats',
-      isPopular: true,
-    ),
-    RideOption(
-      id: 'comfort',
-      title: 'Zemen Comfort',
-      subtitle: 'AC • Newer Corolla, Elantra',
-      price: 260,
-      etaMinutes: 2,
-      icon: Icons.local_taxi_rounded,
-      capacity: '4 seats',
-    ),
-    RideOption(
-      id: 'xl',
-      title: 'Zemen XL / Van',
-      subtitle: 'Extra luggage & legroom',
-      price: 420,
-      etaMinutes: 7,
-      icon: Icons.airport_shuttle_rounded,
-      capacity: '6 seats',
-    ),
-    RideOption(
-      id: 'moto',
-      title: 'Moto Boda',
-      subtitle: 'Fastest through Addis traffic',
-      price: 110,
-      etaMinutes: 1,
-      icon: Icons.two_wheeler_rounded,
-      capacity: '1 seat',
-      isFastest: true,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchGebetaRoute();
+  }
+
+  Future<void> _fetchGebetaRoute() async {
+    final route = await GebetaMapsService.getDirections(
+      originLat: widget.pickupLat,
+      originLon: widget.pickupLon,
+      destLat: widget.destLat,
+      destLon: widget.destLon,
+    );
+
+    if (mounted && route != null) {
+      setState(() {
+        _distanceKm = double.parse(route.distanceKm.toStringAsFixed(1));
+        _durationMinutes = route.durationMinutes;
+        _isLoadingRoute = false;
+      });
+    } else if (mounted) {
+      setState(() => _isLoadingRoute = false);
+    }
+  }
+
+  List<RideOption> get _rideOptions {
+    // Dynamically calculate fares based on Gebeta distance
+    final standardBase = 80 + (_distanceKm * 13).round();
+    final comfortBase = 120 + (_distanceKm * 17).round();
+    final xlBase = 180 + (_distanceKm * 28).round();
+    final motoBase = 50 + (_distanceKm * 8).round();
+
+    return [
+      RideOption(
+        id: 'standard',
+        title: 'Zemen Standard',
+        subtitle: 'Popular • Toyota Vitz, Echo',
+        price: standardBase,
+        etaMinutes: 4,
+        icon: Icons.directions_car_filled_rounded,
+        capacity: '4 seats',
+        isPopular: true,
+      ),
+      RideOption(
+        id: 'comfort',
+        title: 'Zemen Comfort',
+        subtitle: 'AC • Newer Corolla, Elantra',
+        price: comfortBase,
+        etaMinutes: 2,
+        icon: Icons.local_taxi_rounded,
+        capacity: '4 seats',
+      ),
+      RideOption(
+        id: 'xl',
+        title: 'Zemen XL / Van',
+        subtitle: 'Extra luggage & legroom',
+        price: xlBase,
+        etaMinutes: 7,
+        icon: Icons.airport_shuttle_rounded,
+        capacity: '6 seats',
+      ),
+      RideOption(
+        id: 'moto',
+        title: 'Moto Boda',
+        subtitle: 'Fastest through Addis traffic',
+        price: motoBase,
+        etaMinutes: 1,
+        icon: Icons.two_wheeler_rounded,
+        capacity: '1 seat',
+        isFastest: true,
+      ),
+    ];
+  }
 
   RideOption get _currentOption =>
       _rideOptions.firstWhere((r) => r.id == _selectedRideId);
@@ -91,20 +136,40 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          'Choose a Ride',
-          style: AppTypography.headlineSm.copyWith(color: AppColors.onSurface),
+        title: Row(
+          children: [
+            Text(
+              'Choose a Ride',
+              style: AppTypography.headlineSm.copyWith(color: AppColors.onSurface),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.tertiary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                'Gebeta Route',
+                style: AppTypography.labelSm.copyWith(
+                  color: AppColors.tertiary,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Route Mini Map
+            // Gebeta Map Route Viewport
             SizedBox(
-              height: 140,
+              height: 150,
               width: double.infinity,
-              child: MapViewCanvas(
-                height: 140,
+              child: GebetaMapWidget(
+                height: 150,
                 showRoute: true,
                 showDriverPin: true,
                 pickupLabel: widget.pickupAddress,
@@ -112,7 +177,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
               ),
             ),
 
-            // Waypoints Recap Header Card
+            // Waypoints & Gebeta Live Distance Recap
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -120,7 +185,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                 color: AppColors.surfaceContainerLowest,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: AppColors.outlineVariant.withOpacity(0.3),
+                  color: AppColors.outlineVariant.withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
@@ -173,6 +238,39 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: _isLoadingRoute
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '$_distanceKm km',
+                                style: AppTypography.labelSm.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              Text(
+                                '~$_durationMinutes min',
+                                style: AppTypography.labelSm.copyWith(
+                                  color: AppColors.onSurfaceVariant,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
                 ],
               ),
             ),
@@ -198,13 +296,13 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primary.withOpacity(0.05)
+                            ? AppColors.primary.withValues(alpha: 0.05)
                             : AppColors.surfaceContainerLowest,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isSelected
                               ? AppColors.primary
-                              : AppColors.outlineVariant.withOpacity(0.4),
+                              : AppColors.outlineVariant.withValues(alpha: 0.4),
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -252,7 +350,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                           vertical: 2,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: AppColors.primary.withOpacity(0.1),
+                                          color: AppColors.primary.withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
@@ -272,7 +370,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                           vertical: 2,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: AppColors.tertiary.withOpacity(0.12),
+                                          color: AppColors.tertiary.withValues(alpha: 0.12),
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
@@ -337,7 +435,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 18,
                     offset: const Offset(0, -4),
                   ),
@@ -349,7 +447,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                   // Payment Selector Row
                   Row(
                     children: [
-                      // Telebirr Option
+                      // Telebirr Option (Payment Method only)
                       Expanded(
                         child: InkWell(
                           onTap: () => setState(() => _paymentMethod = 'telebirr'),

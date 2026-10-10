@@ -4,7 +4,6 @@ import '../../core/theme/app_typography.dart';
 import '../ride/destination_search_screen.dart';
 import '../delivery/package_delivery_screen.dart';
 import '../food/food_delivery_screen.dart';
-import '../driver/driver_hud_screen.dart';
 
 class SuperAppHomeScreen extends StatefulWidget {
   final VoidCallback onOpenDrawer;
@@ -328,20 +327,20 @@ class _SuperAppHomeScreenState extends State<SuperAppHomeScreen> {
                   ),
                   const SizedBox(width: 12),
 
-                  // Driver Mode Switch
+                  // Airport Express Card
                   Expanded(
                     child: _buildServiceCard(
-                      title: 'Driver Mode',
-                      subtitle: 'Earn today in Addis',
-                      tag: 'LIVE HUD',
-                      tagColor: AppColors.primaryContainer,
-                      icon: Icons.speed_rounded,
-                      iconColor: AppColors.primaryContainer,
-                      bgColor: AppColors.primaryContainer.withOpacity(0.06),
+                      title: 'Airport Express',
+                      subtitle: 'Bole Terminal 1 & 2',
+                      tag: 'PRIORITY',
+                      tagColor: AppColors.secondary,
+                      icon: Icons.local_airport_rounded,
+                      iconColor: AppColors.secondary,
+                      bgColor: AppColors.secondary.withValues(alpha: 0.08),
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => const DriverHudScreen(),
+                            builder: (_) => const DestinationSearchScreen(),
                           ),
                         );
                       },

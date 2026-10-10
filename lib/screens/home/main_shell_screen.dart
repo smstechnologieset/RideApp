@@ -5,7 +5,7 @@ import '../dev/screen_gallery_drawer.dart';
 import 'super_app_home_screen.dart';
 import '../history/ride_history_screen.dart';
 import '../payment/payment_methods_screen.dart';
-import '../driver/driver_hud_screen.dart';
+import '../profile/profile_screen.dart';
 
 class MainShellScreen extends StatefulWidget {
   final int initialTab;
@@ -39,7 +39,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
       SuperAppHomeScreen(onOpenDrawer: _openDrawer),
       const RideHistoryScreen(),
       const PaymentMethodsScreen(),
-      const DriverHudScreen(),
+      const ProfileScreen(),
     ];
 
     return Scaffold(
@@ -54,7 +54,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
           color: AppColors.surfaceContainerLowest,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 16,
               offset: const Offset(0, -4),
             ),
@@ -83,8 +83,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
                 ),
                 _buildNavItem(
                   index: 3,
-                  icon: Icons.speed_rounded,
-                  label: 'Driver HUD',
+                  icon: Icons.person_rounded,
+                  label: 'Profile',
                 ),
               ],
             ),

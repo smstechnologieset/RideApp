@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../widgets/map_view_canvas.dart';
+import '../../widgets/gebeta_map_widget.dart';
 
 class PackageDeliveryScreen extends StatefulWidget {
   const PackageDeliveryScreen({super.key});
@@ -60,7 +60,7 @@ class _PackageDeliveryScreenState extends State<PackageDeliveryScreen> {
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.2),
+                      color: AppColors.primary.withValues(alpha: 0.2),
                       blurRadius: 14,
                       offset: const Offset(0, 4),
                     ),
@@ -72,7 +72,7 @@ class _PackageDeliveryScreenState extends State<PackageDeliveryScreen> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.18),
+                        color: Colors.white.withValues(alpha: 0.18),
                         shape: BoxShape.circle,
                       ),
                       child: const Center(
@@ -96,7 +96,7 @@ class _PackageDeliveryScreenState extends State<PackageDeliveryScreen> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
@@ -135,13 +135,13 @@ class _PackageDeliveryScreenState extends State<PackageDeliveryScreen> {
 
               const SizedBox(height: 14),
 
-              // Live Route Static Mini-Map Viewport
+              // Live Route Static Mini-Map Viewport with Gebeta
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: SizedBox(
                   height: 130,
                   width: double.infinity,
-                  child: const MapViewCanvas(
+                  child: const GebetaMapWidget(
                     height: 130,
                     showRoute: true,
                     showDriverPin: true,

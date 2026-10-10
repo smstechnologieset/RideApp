@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../home/main_shell_screen.dart';
 import 'otp_verification_screen.dart';
 
 class PhoneLoginScreen extends StatefulWidget {
@@ -11,9 +12,13 @@ class PhoneLoginScreen extends StatefulWidget {
 }
 
 class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
+  bool _isSignUp = false; // false: Sign In, true: Sign Up
   final TextEditingController _phoneController =
       TextEditingController(text: '91 123 4567');
+  final TextEditingController _nameController =
+      TextEditingController(text: 'Abebe Bikila');
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   void _submitPhone() {
     final phone = _phoneController.text.trim();
@@ -34,6 +39,35 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
     });
   }
 
+  void _continueWithGoogle() {
+    setState(() => _isGoogleLoading = true);
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        setState(() => _isGoogleLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _isSignUp
+                  ? 'Account created with Google (Abebe Bikila)!'
+                  : 'Signed in with Google (Abebe Bikila)!',
+            ),
+          ),
+        );
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const MainShellScreen()),
+          (route) => false,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _nameController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,27 +79,154 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
+
+              // Sign In vs Sign Up Tabs
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                padding: const EdgeInsets.all(4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => setState(() => _isSignUp = false),
+                        borderRadius: BorderRadius.circular(10),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: !_isSignUp
+                                ? Colors.white
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: !_isSignUp
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.05),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Sign In',
+                              style: AppTypography.bodyMdMedium.copyWith(
+                                color: !_isSignUp
+                                    ? AppColors.primary
+                                    : AppColors.onSurfaceVariant,
+                                fontWeight: !_isSignUp
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => setState(() => _isSignUp = true),
+                        borderRadius: BorderRadius.circular(10),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: _isSignUp
+                                ? Colors.white
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: _isSignUp
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.05),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Sign Up',
+                              style: AppTypography.bodyMdMedium.copyWith(
+                                color: _isSignUp
+                                    ? AppColors.primary
+                                    : AppColors.onSurfaceVariant,
+                                fontWeight: _isSignUp
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
               // Header
               Text(
-                'Enter your phone\nnumber',
+                _isSignUp
+                    ? 'Create your\nZemenGo account'
+                    : 'Welcome back,\nsign in to ZemenGo',
                 style: AppTypography.displayLgMobile.copyWith(
                   color: AppColors.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'We will send a 4-digit verification code to confirm your account in Addis Ababa.',
+                _isSignUp
+                    ? 'Enter your details to request rides and packages across Addis Ababa.'
+                    : 'Enter your phone number to receive a 4-digit code.',
                 style: AppTypography.bodyLg.copyWith(
                   color: AppColors.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
+
+              // Full Name field (Only shown for Sign Up)
+              if (_isSignUp) ...[
+                Text(
+                  'FULL NAME',
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _nameController,
+                  style: AppTypography.bodyMdMedium.copyWith(
+                    color: AppColors.onSurface,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your full name',
+                    prefixIcon: Icon(Icons.person_outline_rounded),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+
+              // Phone Label
+              Text(
+                'PHONE NUMBER',
+                style: AppTypography.labelSm.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
 
               // Phone Input Field Container
               Container(
@@ -73,7 +234,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                   color: AppColors.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppColors.outlineVariant.withOpacity(0.4),
+                    color: AppColors.outlineVariant.withValues(alpha: 0.4),
                   ),
                 ),
                 child: Row(
@@ -162,21 +323,26 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('Send Verification Code'),
+                    : Text(
+                        _isSignUp
+                            ? 'Sign Up with Phone'
+                            : 'Sign In with Phone',
+                      ),
               ),
 
               const SizedBox(height: 24),
 
-              // Divider with 'or'
+              // Divider with 'OR CONTINUE WITH'
               Row(
                 children: [
                   const Expanded(child: Divider(color: AppColors.outlineVariant)),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
-                      'OR QUICK LOGIN',
+                      'OR CONTINUE WITH',
                       style: AppTypography.labelSm.copyWith(
                         color: AppColors.outline,
+                        fontSize: 10,
                       ),
                     ),
                   ),
@@ -186,56 +352,86 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
 
               const SizedBox(height: 20),
 
-              // Telebirr Fast Connect Button
+              // Google Sign-In / Sign-Up Button
               InkWell(
-                onTap: _submitPhone,
+                onTap: _isGoogleLoading ? null : _continueWithGoogle,
                 borderRadius: BorderRadius.circular(14),
                 child: Container(
                   height: 52,
                   decoration: BoxDecoration(
-                    color: AppColors.telebirr.withOpacity(0.08),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: AppColors.telebirr.withOpacity(0.3),
+                      color: AppColors.outlineVariant.withValues(alpha: 0.8),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.account_balance_wallet_rounded,
-                        color: AppColors.telebirr,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Continue with Telebirr ID',
-                        style: AppTypography.bodyMdMedium.copyWith(
-                          color: AppColors.telebirr,
-                          fontWeight: FontWeight.w700,
+                      if (_isGoogleLoading)
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      else ...[
+                        // Google "G" Logo SVG/Container
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: RichText(
+                              text: const TextSpan(
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Roboto',
+                                ),
+                                children: [
+                                  TextSpan(text: 'G', style: TextStyle(color: Color(0xFF4285F4))),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 12),
+                        Text(
+                          _isSignUp ? 'Sign Up with Google' : 'Sign In with Google',
+                          style: AppTypography.bodyMdMedium.copyWith(
+                            color: AppColors.onSurface,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ),
 
-              const Spacer(),
+              const SizedBox(height: 32),
 
               // Legal / Terms note
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Center(
-                  child: Text(
-                    'By continuing, you agree to ZemenGo Terms of Service & Privacy Policy.',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.labelMd.copyWith(
-                      color: AppColors.onSurfaceVariant.withOpacity(0.8),
-                    ),
+              Center(
+                child: Text(
+                  'By continuing, you agree to ZemenGo Terms of Service & Privacy Policy.',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.labelMd.copyWith(
+                    color: AppColors.onSurfaceVariant.withValues(alpha: 0.8),
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),

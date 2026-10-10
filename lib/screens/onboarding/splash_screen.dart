@@ -189,7 +189,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Powered by Telebirr & CBE',
+                  'Powered by Gebeta Maps & Telebirr',
                   style: AppTypography.labelSm.copyWith(
                     color: Colors.white.withOpacity(0.65),
                   ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../widgets/map_view_canvas.dart';
+import '../../widgets/gebeta_map_widget.dart';
 import 'ride_booking_screen.dart';
 
 class MapPinPickerScreen extends StatefulWidget {
@@ -13,7 +13,7 @@ class MapPinPickerScreen extends StatefulWidget {
 
 class _MapPinPickerScreenState extends State<MapPinPickerScreen> {
   String _selectedAddress = 'Bole Medhanealem, Cameroon Street';
-  String _subCity = 'Bole Sub-City, Addis Ababa • GPS Accurate';
+  String _subCity = 'Bole Sub-City, Addis Ababa • Gebeta Accurate';
 
   void _confirmLocation() {
     Navigator.of(context).push(
@@ -21,6 +21,8 @@ class _MapPinPickerScreenState extends State<MapPinPickerScreen> {
         builder: (_) => RideBookingScreen(
           pickupAddress: _selectedAddress,
           destinationAddress: 'Piassa, Churchill Avenue, Office 402',
+          pickupLat: 8.9979,
+          pickupLon: 38.7867,
         ),
       ),
     );
@@ -32,9 +34,9 @@ class _MapPinPickerScreenState extends State<MapPinPickerScreen> {
       backgroundColor: AppColors.surface,
       body: Stack(
         children: [
-          // Full Screen Map Canvas
+          // Full Screen Gebeta Map
           Positioned.fill(
-            child: MapViewCanvas(
+            child: GebetaMapWidget(
               height: MediaQuery.of(context).size.height,
               showRoute: false,
               showDriverPin: true,

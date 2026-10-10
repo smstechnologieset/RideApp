@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
-import '../../widgets/map_view_canvas.dart';
+import '../../widgets/gebeta_map_widget.dart';
 import '../../core/models/ride_models.dart';
 import 'active_enroute_screen.dart';
 
@@ -53,9 +53,9 @@ class _DriverAssignedScreenState extends State<DriverAssignedScreen> {
       backgroundColor: AppColors.surface,
       body: Stack(
         children: [
-          // Live Tracking Map
+          // Live Tracking Map with Gebeta
           Positioned.fill(
-            child: MapViewCanvas(
+            child: GebetaMapWidget(
               height: MediaQuery.of(context).size.height,
               showRoute: true,
               showDriverPin: true,
