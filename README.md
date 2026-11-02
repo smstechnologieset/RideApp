@@ -1,16 +1,7 @@
-# ride_app
+# ZemenGo workspace
 
-A new Flutter project.
+- **CustomerApp**: existing Flutter customer application, assets, Android build setup and customer demo documentation.
+- **AdminWebsite**: local staff administration demo. Start with [AdminWebsite/README.md](AdminWebsite/README.md) or double-click `AdminWebsite\Start-Admin.cmd`.
+- **DriverApp**: reserved for Zemen Pro, including future driver and restaurant workspaces.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The separate RestaurantWebsite directory was removed because restaurants will use Zemen Pro.
