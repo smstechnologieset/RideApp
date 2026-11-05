@@ -1,254 +1,50 @@
 import 'package:flutter/material.dart';
+import '../../core/state/food_store.dart';
+import '../../core/state/demo_store.dart';
 import '../../core/theme/app_colors.dart';
-import '../../widgets/demo_notice.dart';
 import '../../widgets/app_artwork.dart';
-
-class FoodDeliveryScreen extends StatefulWidget {
-  const FoodDeliveryScreen({super.key});
-  @override
-  State<FoodDeliveryScreen> createState() => _FoodDeliveryScreenState();
-}
-
-class _FoodDeliveryScreenState extends State<FoodDeliveryScreen> {
-  String _category = 'All', _query = '';
-  final _favorites = <String>{};
-  static const _restaurants = [
-    (
-      name: 'Kategna Restaurant',
-      category: 'Habesha',
-      subtitle: 'Traditional Ethiopian · Bole Atlas',
-      image: AppArtwork.habesha,
-      items: [
-        'Beyaynetu · 280 ETB',
-        'Special tibs · 420 ETB',
-        'Shiro · 190 ETB',
-      ],
-    ),
-    (
-      name: 'Tomoca Coffee',
-      category: 'Coffee',
-      subtitle: 'Coffee & pastries · Sarbet',
-      image: AppArtwork.coffee,
-      items: [
-        'Macchiato · 90 ETB',
-        'Ethiopian coffee · 70 ETB',
-        'Croissant · 150 ETB',
-      ],
-    ),
-    (
-      name: 'Savor Addis',
-      category: 'Continental',
-      subtitle: 'Pizza & grills · Bole Rwanda',
-      image: AppArtwork.pizza,
-      items: [
-        'Margherita pizza · 390 ETB',
-        'Grilled chicken · 480 ETB',
-        'Fresh juice · 140 ETB',
-      ],
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final restaurants = _restaurants
-        .where(
-          (r) =>
-              (_category == 'All' || r.category == _category) &&
-              '${r.name} ${r.subtitle} ${r.items.join(' ')}'
-                  .toLowerCase()
-                  .contains(_query.toLowerCase()),
-        )
-        .toList();
-    return Scaffold(
-      appBar: AppBar(title: const Text('Food preview')),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            const DemoNotice(
-              text:
-                  'Upcoming service · Sample restaurants, menus and prices. Ordering is not active.',
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'A taste of Addis.',
-              style: Theme.of(
-                context,
-              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'From a morning macchiato to your favorite tibs.',
-              style: TextStyle(color: AppColors.outline, height: 1.5),
-            ),
-            const SizedBox(height: 22),
-            TextField(
-              onChanged: (value) => setState(() => _query = value),
-              decoration: const InputDecoration(
-                hintText: 'Search food or restaurants',
-                prefixIcon: Icon(Icons.search),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              children: [
-                for (final category in [
-                  'All',
-                  'Habesha',
-                  'Coffee',
-                  'Continental',
-                ])
-                  ChoiceChip(
-                    label: Text(category),
-                    selected: _category == category,
-                    onSelected: (_) => setState(() => _category = category),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 22),
-            if (restaurants.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('No sample restaurants match that search.'),
-              ),
-            for (final restaurant in restaurants)
-              Card(
-                margin: const EdgeInsets.only(bottom: 18),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: () => showModalBottomSheet<void>(
-                    context: context,
-                    showDragHandle: true,
-                    isScrollControlled: true,
-                    builder: (sheet) => SafeArea(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(24, 10, 24, 28),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(18),
-                              child: AppPhoto(
-                                restaurant.image,
-                                height: 160,
-                                width: double.infinity,
-                              ),
-                            ),
-                            const SizedBox(height: 18),
-                            Text(
-                              restaurant.name,
-                              style: const TextStyle(
-                                fontSize: 23,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            const DemoNotice(
-                              text:
-                                  'Menu preview · Sample prices. Cart, checkout and restaurant acceptance are planned for a later phase.',
-                            ),
-                            const SizedBox(height: 16),
-                            for (final item in restaurant.items)
-                              ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(item),
-                              ),
-                            const SizedBox(height: 16),
-                            OutlinedButton(
-                              onPressed: () => Navigator.pop(sheet),
-                              child: const Text('Back to restaurants'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 174,
-                        color: AppColors.surfaceContainerLow,
-                        child: Stack(
-                          children: [
-                            Positioned.fill(child: AppPhoto(restaurant.image)),
-                            Positioned(
-                              right: 8,
-                              top: 8,
-                              child: IconButton(
-                                tooltip: 'Favorite restaurant',
-                                style: IconButton.styleFrom(
-                                  backgroundColor: Colors.white.withValues(
-                                    alpha: .96,
-                                  ),
-                                ),
-                                onPressed: () => setState(() {
-                                  if (!_favorites.add(restaurant.name)) {
-                                    _favorites.remove(restaurant.name);
-                                  }
-                                }),
-                                icon: Icon(
-                                  _favorites.contains(restaurant.name)
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              restaurant.name,
-                              style: const TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              restaurant.subtitle,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.outline,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            const Row(
-                              children: [
-                                Text(
-                                  'Explore sample menu',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Spacer(),
-                                Icon(
-                                  Icons.arrow_forward_rounded,
-                                  size: 18,
-                                  color: AppColors.primary,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+import '../../widgets/gebeta_map_widget.dart';
+const blue=AppColors.primary, muted=AppColors.onSurfaceVariant;
+String money(int n)=>'ETB $n';
+void push(BuildContext c,Widget w)=>Navigator.push(c,MaterialPageRoute<void>(builder:(_)=>w));
+void message(BuildContext c,String t)=>ScaffoldMessenger.of(c).showSnackBar(SnackBar(content:Text(t)));
+Future<void> attempt(BuildContext c,Future<void> Function() f)async{try{await f();}catch(e){if(c.mounted)message(c,e.toString().replaceFirst('Bad state: ',''));}}
+Widget cta(String t,VoidCallback? f)=>SizedBox(width:double.infinity,child:FilledButton(onPressed:f,style:FilledButton.styleFrom(padding:const EdgeInsets.all(17),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(15))),child:Text(t,style:const TextStyle(fontSize:15,fontWeight:FontWeight.w700))));
+Widget tag(String t)=>Container(padding:const EdgeInsets.symmetric(vertical:6,horizontal:10),decoration:BoxDecoration(color:AppColors.primaryFixed,borderRadius:BorderRadius.circular(25)),child:Text(t,style:const TextStyle(color:blue,fontSize:11,fontWeight:FontWeight.w700)));
+Widget heading(String t)=>Padding(padding:const EdgeInsets.only(top:23,bottom:15),child:Text(t,style:const TextStyle(fontSize:22,fontWeight:FontWeight.w800,letterSpacing:-.5)));
+Widget box(Widget w)=>Container(margin:const EdgeInsets.only(bottom:16),padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(20),border:Border.all(color:AppColors.outlineVariant)),child:w);
+Widget empty(String t)=>Padding(padding:const EdgeInsets.symmetric(vertical:45),child:Column(children:[const CircleAvatar(radius:44,backgroundColor:AppColors.primaryFixed,child:Icon(Icons.shopping_bag_outlined,color:blue,size:40)),const SizedBox(height:20),Text(t,textAlign:TextAlign.center,style:const TextStyle(fontSize:22,fontWeight:FontWeight.w700)),const SizedBox(height:10),const Text('Discover something delicious in ZemenGo Food.',textAlign:TextAlign.center,style:TextStyle(color:muted))]));
+Widget demo()=>const Padding(padding:EdgeInsets.symmetric(vertical:16),child:Text('DEMO WALKTHROUGH · No real orders or charges',textAlign:TextAlign.center,style:TextStyle(fontSize:10,color:muted)));
+Future<bool> confirm(BuildContext c,String t)async=>await showModalBottomSheet<bool>(context:c,showDragHandle:true,builder:(c)=>SafeArea(child:Padding(padding:const EdgeInsets.all(24),child:Column(mainAxisSize:MainAxisSize.min,children:[heading(t),cta('Confirm',()=>Navigator.pop(c,true)),TextButton(onPressed:()=>Navigator.pop(c,false),child:const Text('Keep items'))]))))??false;
+class FoodPage extends StatelessWidget{const FoodPage(this.title,this.body,{super.key,this.bottom});final String title;final Widget Function(BuildContext) body;final Widget Function(BuildContext)? bottom;@override Widget build(BuildContext c)=>AnimatedBuilder(animation:FoodStore.instance,builder:(c,_)=>Scaffold(appBar:AppBar(title:Text(title,style:const TextStyle(fontSize:19,fontWeight:FontWeight.w800))),body:SafeArea(child:body(c)),bottomNavigationBar:bottom==null?null:SafeArea(child:Padding(padding:const EdgeInsets.fromLTRB(20,8,20,16),child:bottom!(c)))));}
+Widget cartButton(BuildContext c)=>cta('${FoodStore.instance.count} items · ${money(FoodStore.instance.subtotal)}    View cart →',()=>push(c,const FoodCart()));
+class FoodDeliveryScreen extends StatefulWidget{const FoodDeliveryScreen({super.key});@override State<FoodDeliveryScreen> createState()=>_Home();}
+class _Home extends State<FoodDeliveryScreen>{final s=FoodStore.instance;late final ready=s.initialize();int tab=0;String query='',category='All',sort='Recommended';@override Widget build(BuildContext c)=>FutureBuilder<void>(future:ready,builder:(c,snap)=>AnimatedBuilder(animation:s,builder:(c,_) {
+ final rs=foodRestaurants.where((r)=>r.dishes.any((d)=>(category=='All'||d.category==category)&&(s.preference!='Fasting'||d.fasting))&&'${r.name} ${r.area} ${r.dishes.map((d)=>d.name).join(' ')}'.toLowerCase().contains(query.toLowerCase())).toList();if(sort=='Fastest')rs.sort((a,b)=>a.minutes.compareTo(b.minutes));if(sort=='Top rated')rs.sort((a,b)=>b.rating.compareTo(a.rating));
+ return Scaffold(appBar:AppBar(title:const Text('ZemenGo Food',style:TextStyle(fontWeight:FontWeight.w800)),actions:[IconButton(tooltip:'Food favorites',onPressed:()=>push(c,const FoodFavorites()),icon:const Icon(Icons.favorite_border)),IconButton(tooltip:'Food notifications',onPressed:()=>push(c,const FoodNotifications()),icon:const Icon(Icons.notifications_none))]),body:SafeArea(child:snap.connectionState!=ConnectionState.done?const Center(child:CircularProgressIndicator()):ListView(padding:const EdgeInsets.fromLTRB(20,4,20,24),children:[if(s.storageError!=null)Text(s.storageError!),if(tab<2)...[
+ if(tab==0)...[Row(children:[Expanded(child:Text('A taste of Addis.',style:const TextStyle(fontSize:27,fontWeight:FontWeight.w800,letterSpacing:-.8))),PopupMenuButton<String>(onSelected:(v){s.preference=v;s.save();},itemBuilder:(_)=>['All food','Fasting','Halal'].map((v)=>PopupMenuItem(value:v,child:Text(v))).toList(),child:tag('${s.preference} ⌄'))]),ListTile(contentPadding:EdgeInsets.zero,leading:const Icon(Icons.location_on_outlined,color:blue),title:Text(s.address,maxLines:1,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:12,color:muted)),trailing:const Icon(Icons.expand_more),onTap:()=>push(c,const FoodAddress()))]else heading('What are you craving?'),
+ TextField(key:const Key('food_search'),onChanged:(v)=>setState(()=>query=v),decoration:const InputDecoration(hintText:'Search restaurants, foods…',prefixIcon:Icon(Icons.search))),const SizedBox(height:16),SizedBox(height:92,child:ListView(scrollDirection:Axis.horizontal,children:[for(final cat in ['All','Habesha','Pizza','Coffee','Breakfast'])Padding(padding:const EdgeInsets.only(right:15),child:InkWell(onTap:()=>setState(()=>category=cat),child:Column(children:[Container(width:59,height:59,padding:const EdgeInsets.all(3),decoration:BoxDecoration(shape:BoxShape.circle,border:Border.all(color:category==cat?blue:Colors.transparent,width:2)),child:ClipOval(child:AppPhoto(cat=='Pizza'?AppArtwork.pizza:cat=='Coffee'||cat=='Breakfast'?AppArtwork.coffee:AppArtwork.habesha))),const SizedBox(height:6),Text(cat,style:TextStyle(color:category==cat?blue:muted,fontSize:12))])))])),
+ if(tab==0&&query.isEmpty)...[ClipRRect(borderRadius:BorderRadius.circular(22),child:Stack(children:[const Positioned.fill(child:AppPhoto(AppArtwork.pizza)),const Positioned.fill(child:DecoratedBox(decoration:BoxDecoration(gradient:LinearGradient(colors:[Color(0xF01843B8),Color(0x881843B8)])))),Padding(padding:const EdgeInsets.all(22),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('GOOD FOOD. GREAT DAYS.',style:TextStyle(color:Colors.white70,fontSize:10,letterSpacing:1.4)),const SizedBox(height:8),const Text('Your next favorite,\ndelivered.',style:TextStyle(color:Colors.white,fontSize:28,fontWeight:FontWeight.w800,height:1.1)),const SizedBox(height:12),FilledButton.tonal(onPressed:()=>push(c,const FoodCoupons()),child:const Text('ETB 100 off · ZEMEN100'))]))])),heading('Special offers'),SizedBox(height:195,child:ListView(scrollDirection:Axis.horizontal,children:[for(final r in foodRestaurants.take(3))SizedBox(width:180,child:Padding(padding:const EdgeInsets.only(right:14),child:InkWell(onTap:()=>push(c,FoodRestaurantPage(r)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[ClipRRect(borderRadius:BorderRadius.circular(16),child:AppPhoto(r.image,width:170,height:120)),const SizedBox(height:8),Text(r.dishes.first.name,style:const TextStyle(fontWeight:FontWeight.w700)),Text(r.name,style:const TextStyle(color:muted,fontSize:11)),Text(money(r.dishes.first.price),style:const TextStyle(fontWeight:FontWeight.w800,color:blue))]))))]))],
+ Row(children:[Expanded(child:heading(tab==1?'Discover restaurants':'Nearby restaurants')),PopupMenuButton<String>(onSelected:(v)=>setState(()=>sort=v),itemBuilder:(_)=>['Recommended','Fastest','Top rated'].map((v)=>PopupMenuItem(value:v,child:Text(v))).toList(),child:const Icon(Icons.tune,color:blue))]),if(rs.isEmpty)empty('No restaurants match that search'),for(final r in rs)RestaurantCard(r)],if(tab==2)const FoodOrders(),if(tab==3)const FoodProfile(),demo()])),bottomNavigationBar:SafeArea(child:Column(mainAxisSize:MainAxisSize.min,children:[if(s.count>0)Padding(padding:const EdgeInsets.symmetric(horizontal:16,vertical:5),child:cartButton(c)),Padding(padding:const EdgeInsets.fromLTRB(16,4,16,10),child:ClipRRect(borderRadius:BorderRadius.circular(28),child:NavigationBar(height:67,backgroundColor:AppColors.primaryFixed,selectedIndex:tab,onDestinationSelected:(v)=>setState(()=>tab=v),destinations:const [NavigationDestination(icon:Icon(Icons.home_outlined),label:'Home'),NavigationDestination(icon:Icon(Icons.search),label:'Discover'),NavigationDestination(icon:Icon(Icons.receipt_long_outlined),label:'Orders'),NavigationDestination(icon:Icon(Icons.person_outline),label:'Profile')])))])));}));}
+class RestaurantCard extends StatelessWidget{const RestaurantCard(this.r,{super.key});final FoodRestaurant r;@override Widget build(BuildContext c){final s=FoodStore.instance;return Padding(padding:const EdgeInsets.only(bottom:20),child:Material(color:Colors.white,borderRadius:BorderRadius.circular(22),clipBehavior:Clip.antiAlias,child:InkWell(onTap:()=>push(c,FoodRestaurantPage(r)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Stack(children:[AppPhoto(r.image,height:185,width:double.infinity),Positioned(top:12,left:12,child:tag('${r.minutes}–${r.minutes+10} min')),Positioned(top:6,right:6,child:IconButton(tooltip:'Favorite ${r.name}',style:IconButton.styleFrom(backgroundColor:Colors.white),onPressed:()=>s.favorite(r.id),icon:Icon(s.favorites.contains(r.id)?Icons.favorite:Icons.favorite_border,color:blue)))]),Padding(padding:const EdgeInsets.all(16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Row(children:[Expanded(child:Text(r.name,style:const TextStyle(fontSize:18,fontWeight:FontWeight.w800))),const Icon(Icons.star_rounded,color:Color(0xFFEDA826),size:18),Text(' ${r.rating}')]),const SizedBox(height:6),Text('${r.area} · Delivery ${money(r.fee)}',style:const TextStyle(color:muted,fontSize:12))]))]))));}}
+class FoodRestaurantPage extends StatefulWidget{const FoodRestaurantPage(this.r,{super.key});final FoodRestaurant r;@override State<FoodRestaurantPage> createState()=>_Menu();}
+class _Menu extends State<FoodRestaurantPage>{String query='';@override Widget build(BuildContext c){final r=widget.r,s=FoodStore.instance;final dishes=r.dishes.where((d)=>d.name.toLowerCase().contains(query.toLowerCase())&&(s.preference!='Fasting'||d.fasting));return FoodPage(r.name,(c)=>ListView(padding:const EdgeInsets.only(bottom:20),children:[AppPhoto(r.image,height:230,width:double.infinity),Padding(padding:const EdgeInsets.all(20),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(r.name,style:const TextStyle(fontSize:26,fontWeight:FontWeight.w800)),const SizedBox(height:8),Text('${r.area}, Addis Ababa',style:const TextStyle(color:muted)),const SizedBox(height:15),Wrap(spacing:8,runSpacing:8,children:[tag('★ ${r.rating}'),tag('${r.minutes}–${r.minutes+10} min'),tag('Delivery ${money(r.fee)}'),tag('Open · 09:00–21:00')]),const SizedBox(height:22),TextField(onChanged:(v)=>setState(()=>query=v),decoration:const InputDecoration(hintText:'Search this menu',prefixIcon:Icon(Icons.search))),heading('Made for your cravings'),if(dishes.isEmpty)empty('No dishes match your preference'),for(final d in dishes)dishTile(c,r,d),demo()]))]),bottom:(c)=>s.count>0?cartButton(c):const Text('Tap a dish to customize your order',textAlign:TextAlign.center,style:TextStyle(color:muted)));}}
+Widget dishTile(BuildContext c,FoodRestaurant r,FoodDish d)=>Padding(padding:const EdgeInsets.only(bottom:18),child:InkWell(onTap:()=>showDish(c,r,d),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[ClipRRect(borderRadius:BorderRadius.circular(14),child:AppPhoto(d.image,height:100,width:90)),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(d.name,style:const TextStyle(fontSize:16,fontWeight:FontWeight.w700)),const SizedBox(height:5),Text(d.description,maxLines:2,overflow:TextOverflow.ellipsis,style:const TextStyle(color:muted,fontSize:12,height:1.4)),const SizedBox(height:8),Text(money(d.price),style:const TextStyle(fontWeight:FontWeight.w800)),if(d.fasting)const Text('Fasting friendly',style:TextStyle(color:AppColors.tertiary,fontSize:10))])),Column(children:[IconButton(tooltip:'Save ${d.name}',onPressed:()=>FoodStore.instance.favorite(d.id,dish:true),icon:Icon(FoodStore.instance.favoriteDishes.contains(d.id)?Icons.favorite:Icons.favorite_border,color:blue,size:20)),IconButton(tooltip:'Add ${d.name}',onPressed:()=>showDish(c,r,d),icon:const Icon(Icons.add_circle_outline,color:blue))])])));
+Future<void> showDish(BuildContext c,FoodRestaurant r,FoodDish d)async{int qty=1;String note='';await showModalBottomSheet<void>(context:c,isScrollControlled:true,showDragHandle:true,builder:(c)=>StatefulBuilder(builder:(c,set)=>SafeArea(child:SingleChildScrollView(padding:EdgeInsets.fromLTRB(24,0,24,24+MediaQuery.viewInsetsOf(c).bottom),child:Column(crossAxisAlignment:CrossAxisAlignment.start,mainAxisSize:MainAxisSize.min,children:[ClipRRect(borderRadius:BorderRadius.circular(20),child:AppPhoto(d.image,height:190,width:double.infinity)),heading(d.name),Text(r.name,style:const TextStyle(color:blue)),const SizedBox(height:12),Text(d.description,style:const TextStyle(color:muted,height:1.5)),const SizedBox(height:18),TextField(onChanged:(v)=>note=v,decoration:const InputDecoration(labelText:'Special instructions',hintText:'Less spicy, no onions…')),const SizedBox(height:20),Row(children:[IconButton(tooltip:'Decrease dish quantity',onPressed:qty>1?()=>set(()=>qty--):null,icon:const Icon(Icons.remove_circle_outline)),Text('$qty'),IconButton(tooltip:'Increase dish quantity',onPressed:qty<99?()=>set(()=>qty++):null,icon:const Icon(Icons.add_circle,color:blue)),Expanded(child:cta('Add · ${money(d.price*qty)}',()async{final s=FoodStore.instance;if(s.cart.isNotEmpty&&s.restaurantId!=r.id){if(!await confirm(c,'Replace your cart with this restaurant?'))return;await s.clear();}if(!c.mounted)return;await attempt(c,()async{await s.add(r.id,d,qty,note.trim());if(c.mounted)Navigator.pop(c);});}))])])))));}
+class FoodAddress extends StatefulWidget{const FoodAddress({super.key});@override State<FoodAddress> createState()=>_Address();}
+class _Address extends State<FoodAddress>{late final address=TextEditingController(text:FoodStore.instance.address),note=TextEditingController(text:FoodStore.instance.addressNote);@override void dispose(){address.dispose();note.dispose();super.dispose();}@override Widget build(BuildContext c)=>FoodPage('Delivery address',(c)=>ListView(padding:const EdgeInsets.all(20),children:[heading('Where should we deliver?'),const Text('Add your building and a landmark to help your courier.',style:TextStyle(color:muted)),for(final p in ['Bole Bulbula, Addis Ababa','Bole Atlas, Addis Ababa','Kazanchis, Addis Ababa',...DemoStore.instance.savedPlaces.values.map((p)=>p.name)])ListTile(contentPadding:EdgeInsets.zero,leading:const Icon(Icons.location_on_outlined,color:blue),title:Text(p),onTap:()=>setState(()=>address.text=p)),const SizedBox(height:18),TextField(controller:address,decoration:const InputDecoration(labelText:'Street / area / building')),const SizedBox(height:18),TextField(controller:note,decoration:const InputDecoration(labelText:'Floor, door or landmark (optional)'))]),bottom:(c)=>cta('Save delivery address',(){if(address.text.trim().length<6){message(c,'Enter a complete address');return;}final s=FoodStore.instance;s.address=address.text.trim();s.addressNote=note.text.trim();s.save();Navigator.pop(c);}));}
+Widget totals(int subtotal,int discount,int service,int delivery)=>box(Column(children:[for(final row in [('Subtotal',subtotal),('Discount',-discount),('Service charge',service),('Delivery fee',delivery)])Padding(padding:const EdgeInsets.symmetric(vertical:7),child:Row(children:[Expanded(child:Text(row.$1,style:const TextStyle(color:muted))),Text(money(row.$2))])),const Divider(height:25),Row(children:[const Expanded(child:Text('Total',style:TextStyle(fontSize:18,fontWeight:FontWeight.w800))),Text(money(subtotal-discount+service+delivery),style:const TextStyle(fontSize:22,fontWeight:FontWeight.w800,color:blue))])]));
+class FoodCart extends StatefulWidget{const FoodCart({super.key});@override State<FoodCart> createState()=>_Cart();}
+class _Cart extends State<FoodCart>{final coupon=TextEditingController(),note=TextEditingController();@override void dispose(){coupon.dispose();note.dispose();super.dispose();}@override Widget build(BuildContext c){final s=FoodStore.instance;return FoodPage('Checkout',(c)=>s.cart.isEmpty?ListView(padding:const EdgeInsets.all(24),children:[empty('Your cart is empty'),cta('Start ordering',()=>Navigator.pop(c))]):ListView(padding:const EdgeInsets.all(20),children:[heading('Your cart'),Row(children:[Expanded(child:Text(restaurantById(s.restaurantId!).name,style:const TextStyle(fontSize:18,fontWeight:FontWeight.w700))),TextButton(onPressed:()=>push(c,FoodRestaurantPage(restaurantById(s.restaurantId!))),child:const Text('Add more')),IconButton(tooltip:'Clear food cart',onPressed:()async{if(await confirm(c,'Clear your cart?'))await s.clear();},icon:const Icon(Icons.close))]),ListTile(contentPadding:EdgeInsets.zero,leading:const Icon(Icons.location_on_outlined,color:blue),title:const Text('Delivery address',style:TextStyle(color:muted,fontSize:11)),subtitle:Text(s.address),trailing:const Icon(Icons.chevron_right),onTap:()=>push(c,const FoodAddress())),const Divider(height:30),for(final l in List<FoodLine>.of(s.cart))Padding(padding:const EdgeInsets.only(bottom:18),child:Row(children:[ClipRRect(borderRadius:BorderRadius.circular(12),child:AppPhoto(dishById(l.dishId).image,height:72,width:72)),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(dishById(l.dishId).name,style:const TextStyle(fontWeight:FontWeight.w700)),if(l.note.isNotEmpty)Text(l.note,style:const TextStyle(fontSize:11,color:muted)),Row(children:[IconButton(tooltip:'Remove one ${dishById(l.dishId).name}',onPressed:()=>s.quantity(l,-1),icon:const Icon(Icons.remove_circle_outline,size:22)),Text('${l.quantity}'),IconButton(tooltip:'Add one ${dishById(l.dishId).name}',onPressed:()=>s.quantity(l,1),icon:const Icon(Icons.add_circle_outline,color:blue,size:22))])])),Text(money(l.total),style:const TextStyle(fontWeight:FontWeight.w700))])),const Divider(),Row(children:[Expanded(child:TextField(controller:coupon,decoration:const InputDecoration(hintText:'Promo code'))),TextButton(onPressed:()=>attempt(c,()=>s.applyCoupon(coupon.text)),child:const Text('Apply'))]),TextButton(onPressed:()=>push(c,const FoodCoupons()),child:const Align(alignment:Alignment.centerLeft,child:Text('See available coupons →'))),if(s.discount>0)tag('ZEMEN100 applied · ETB 100 saved'),const SizedBox(height:16),TextField(controller:note,maxLines:2,decoration:const InputDecoration(labelText:'Note for the restaurant (optional)')),const SizedBox(height:24),totals(s.subtotal,s.discount,s.serviceFee,s.deliveryFee),demo()]),bottom:s.cart.isEmpty?null:(c)=>cta('Proceed to payment · ${money(s.total)}',()=>push(c,FoodPayment(note.text.trim()))));}}
+class FoodPayment extends StatefulWidget{const FoodPayment(this.restaurantNote,{super.key});final String restaurantNote;@override State<FoodPayment> createState()=>_Payment();}
+class _Payment extends State<FoodPayment>{String method='';bool call=false,busy=false;final phone=TextEditingController(text:DemoStore.instance.phone),note=TextEditingController();@override void dispose(){phone.dispose();note.dispose();super.dispose();}@override Widget build(BuildContext c){final s=FoodStore.instance;return FoodPage('Payment',(c)=>ListView(padding:const EdgeInsets.all(20),children:[heading('Almost at your doorstep'),box(Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(DemoStore.instance.name,style:const TextStyle(fontWeight:FontWeight.w700)),const SizedBox(height:8),Text(s.address),TextButton(onPressed:()=>push(c,const FoodAddress()),child:const Text('Change delivery address'))])),TextField(controller:phone,keyboardType:TextInputType.phone,decoration:const InputDecoration(labelText:'Contact / alternate phone',hintText:'09… or 07…')),const SizedBox(height:18),TextField(controller:note,maxLines:2,decoration:const InputDecoration(labelText:'Note for the courier (optional)')),SwitchListTile(contentPadding:EdgeInsets.zero,title:const Text('Call on arrival'),subtitle:const Text('Saved with the demo courier instructions'),value:call,onChanged:(v)=>setState(()=>call=v)),heading('Payment options'),for(final m in ['Cash','Chapa'])Padding(padding:const EdgeInsets.only(bottom:14),child:OutlinedButton(style:OutlinedButton.styleFrom(backgroundColor:method==m?AppColors.primaryFixed:Colors.white,side:BorderSide(color:method==m?blue:AppColors.outlineVariant,width:method==m?2:1),padding:const EdgeInsets.all(18)),onPressed:()=>setState(()=>method=m),child:Row(children:[Icon(m=='Cash'?Icons.payments_outlined:Icons.account_balance_wallet_outlined),const SizedBox(width:14),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(m=='Cash'?'Cash on delivery':'Chapa · demo payment',style:const TextStyle(fontWeight:FontWeight.w700)),Text(m=='Cash'?'Pay the courier after delivery':'Simulated success · no money collected',style:const TextStyle(fontSize:11,color:muted))])),Icon(method==m?Icons.check_circle:Icons.circle_outlined)]))),totals(s.subtotal,s.discount,s.serviceFee,s.deliveryFee),demo()]),bottom:(c)=>cta(busy?'Placing demo order…':'Place demo order',method.isEmpty||busy||s.cart.isEmpty?null:()async{if(DemoStore.normalizePhone(phone.text)==null){message(c,'Enter a valid Ethiopian phone number');return;}setState(()=>busy=true);try{final o=await s.place(method:method,restaurantNote:widget.restaurantNote,courierNote:note.text.trim(),phone:DemoStore.normalizePhone(phone.text)!,callOnArrival:call);if(!c.mounted)return;Navigator.pop(c);Navigator.of(c).pushReplacement(MaterialPageRoute<void>(builder:(_)=>FoodOrderDetails(o)));}catch(e){if(c.mounted){message(c,e.toString().replaceFirst('Bad state: ',''));setState(()=>busy=false);}}}));}}
+class FoodOrders extends StatefulWidget{const FoodOrders({super.key});@override State<FoodOrders> createState()=>_Orders();}
+class _Orders extends State<FoodOrders>{String filter='All orders';@override Widget build(BuildContext c){final os=FoodStore.instance.orders.where((o)=>filter=='All orders'||(filter=='Completed'?o.stage==4:o.stage==5));return Column(crossAxisAlignment:CrossAxisAlignment.start,children:[heading('My orders'),Wrap(spacing:8,children:[for(final f in ['All orders','Completed','Cancelled'])ChoiceChip(label:Text(f),selected:filter==f,onSelected:(_)=>setState(()=>filter=f))]),const SizedBox(height:20),if(os.isEmpty)empty('Your next good meal awaits'),for(final o in os)InkWell(onTap:()=>push(c,FoodOrderDetails(o)),child:box(Column(children:[Row(children:[ClipRRect(borderRadius:BorderRadius.circular(14),child:AppPhoto(restaurantById(o.restaurantId).image,height:65,width:65)),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(restaurantById(o.restaurantId).name,style:const TextStyle(fontWeight:FontWeight.w700)),const SizedBox(height:5),Text('${o.date.substring(0,10)} · ${o.lines.fold<int>(0,(n,l)=>n+l.quantity)} items',style:const TextStyle(color:muted,fontSize:11))]))]),const Divider(height:25),Row(children:[Expanded(child:Align(alignment:Alignment.centerLeft,child:tag(o.status))),Text(money(o.total),style:const TextStyle(fontWeight:FontWeight.w700)),const Icon(Icons.chevron_right,size:18)])])))]);}}
+class FoodOrderDetails extends StatelessWidget{const FoodOrderDetails(this.o,{super.key});final FoodOrder o;@override Widget build(BuildContext c){final s=FoodStore.instance,r=restaurantById(o.restaurantId);return FoodPage('Order details',(c)=>ListView(padding:const EdgeInsets.all(20),children:[tag(o.status),heading(o.stage==4?'Enjoy every bite.':o.stage==5?'Order cancelled':'Good food is on its way.'),Text(o.id,style:const TextStyle(color:muted,fontSize:11)),const SizedBox(height:20),if(o.active)...[ClipRRect(borderRadius:BorderRadius.circular(22),child:GebetaMapWidget(height:220,pickupLabel:r.name,destinationLabel:o.address,pickupLat:9.004,pickupLon:38.784,destLat:8.989,destLon:38.7903,driverProgress:o.stage/4,showDriverPin:o.stage>=3,routeCoordinates:const [[38.784,9.004],[38.787,8.999],[38.7903,8.989]])),const SizedBox(height:12),const Text('Illustrative route · simulated courier location',style:TextStyle(fontSize:11,color:muted)),heading('${r.minutes}–${r.minutes+10} min estimated'),for(var i=0;i<5;i++)ListTile(dense:true,contentPadding:EdgeInsets.zero,leading:Icon(i<=o.stage?Icons.check_circle:Icons.circle_outlined,color:i<=o.stage?blue:AppColors.outlineVariant),title:Text(FoodOrder.stages[i],style:TextStyle(fontWeight:i==o.stage?FontWeight.w800:FontWeight.w400))),if(o.stage>=3)box(Row(children:[const CircleAvatar(radius:25,backgroundImage:AssetImage(AppArtwork.driver)),const SizedBox(width:12),const Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Dawit · Zemen Pro courier',style:TextStyle(fontWeight:FontWeight.w700)),Text('★ 4.9 · Demo assignment',style:TextStyle(color:muted,fontSize:11))])),IconButton(tooltip:'Courier contact',onPressed:()=>message(c,'Demo contact only · no call is placed.'),icon:const Icon(Icons.call_outlined,color:blue))])),box(Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Delivery confirmation code',style:TextStyle(color:muted)),Text(o.otp,style:const TextStyle(fontSize:30,fontWeight:FontWeight.w800,letterSpacing:5)),const Text('Share only when your food arrives.',style:TextStyle(color:muted,fontSize:11))]))],heading(r.name),for(final l in o.lines)ListTile(contentPadding:EdgeInsets.zero,leading:ClipRRect(borderRadius:BorderRadius.circular(10),child:AppPhoto(dishById(l.dishId).image,width:52,height:52)),title:Text('${l.quantity} × ${dishById(l.dishId).name}'),subtitle:l.note.isEmpty?null:Text(l.note),trailing:Text(money(l.total))),heading('Delivery details'),box(Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(o.address,style:const TextStyle(fontWeight:FontWeight.w700)),Text(o.phone),if(o.restaurantNote.isNotEmpty)Text('Restaurant: ${o.restaurantNote}'),if(o.courierNote.isNotEmpty)Text('Courier: ${o.courierNote}'),if(o.callOnArrival)const Text('Call on arrival requested'),const SizedBox(height:12),Text(o.method=='Cash'?(o.stage==4?'Cash · collection simulated':'Cash on delivery'):'Chapa · simulated payment success',style:const TextStyle(color:blue,fontWeight:FontWeight.w600))])),totals(o.subtotal,o.discount,o.serviceFee,o.deliveryFee),if(o.stage<=1)TextButton(onPressed:()async{if(await confirm(c,'Cancel this demo order?')){if(c.mounted)await attempt(c,()=>s.cancel(o));}},child:const Text('Cancel order',style:TextStyle(color:AppColors.error))),if(o.stage==4)...[heading(o.rating>0?'Thanks for your ${o.rating}-star rating!':'How was your meal?'),Wrap(alignment:WrapAlignment.center,children:[for(var i=1;i<=5;i++)IconButton(tooltip:'Rate $i stars',onPressed:()=>s.rate(o,i),icon:Icon(i<=o.rating?Icons.star:Icons.star_border,color:const Color(0xFFEDA826),size:30))])],TextButton(onPressed:()=>push(c,const FoodSupport()),child:const Text('Get help with this order')),demo()]),bottom:(c)=>o.active?cta('Demo: ${FoodOrder.stages[o.stage+1]}',()=>s.advance(o)):cta('Order again',()=>attempt(c,()async{if(s.cart.isNotEmpty){if(!await confirm(c,'Replace your cart with this order?'))return;await s.clear();}await s.reorder(o);if(c.mounted)push(c,const FoodCart());})));}}
+class FoodFavorites extends StatefulWidget{const FoodFavorites({super.key});@override State<FoodFavorites> createState()=>_Favorites();}
+class _Favorites extends State<FoodFavorites>{bool dishes=false;@override Widget build(BuildContext c){final s=FoodStore.instance;return FoodPage('Favorites',(c)=>ListView(padding:const EdgeInsets.all(20),children:[SegmentedButton<bool>(segments:const [ButtonSegment(value:false,label:Text('Restaurants')),ButtonSegment(value:true,label:Text('Dishes'))],selected:{dishes},onSelectionChanged:(v)=>setState(()=>dishes=v.first)),const SizedBox(height:20),if(!dishes)...[if(s.favorites.isEmpty)empty('Save your favorite restaurants'),for(final r in foodRestaurants.where((r)=>s.favorites.contains(r.id)))RestaurantCard(r)]else...[if(s.favoriteDishes.isEmpty)empty('Save your favorite dishes'),for(final r in foodRestaurants)for(final d in r.dishes.where((d)=>s.favoriteDishes.contains(d.id)))dishTile(c,r,d)]]));}}
+class FoodCoupons extends StatelessWidget{const FoodCoupons({super.key});@override Widget build(BuildContext c)=>FoodPage('Coupons',(c)=>ListView(padding:const EdgeInsets.all(20),children:[heading('A little treat from us'),const Text('One sample offer, ready for your next order.',style:TextStyle(color:muted)),const SizedBox(height:25),box(Row(children:[Container(padding:const EdgeInsets.all(18),decoration:BoxDecoration(color:AppColors.primaryFixed,borderRadius:BorderRadius.circular(14)),child:const Column(children:[Icon(Icons.local_offer_outlined,color:blue),Text('100',style:TextStyle(fontSize:28,fontWeight:FontWeight.w800,color:blue)),Text('ETB OFF',style:TextStyle(color:blue,fontSize:10))])),const SizedBox(width:15),const Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Your first good bite',style:TextStyle(fontWeight:FontWeight.w800)),SizedBox(height:8),Text('Minimum food subtotal ETB 500',style:TextStyle(color:muted,fontSize:12)),SizedBox(height:12),SelectableText('ZEMEN100',style:TextStyle(color:blue,fontWeight:FontWeight.w800,letterSpacing:1.5))]))])),cta('Apply to current cart',()=>attempt(c,()async{await FoodStore.instance.applyCoupon('ZEMEN100');if(c.mounted)message(c,'ETB 100 discount applied');})),demo()]));}
+class FoodNotifications extends StatelessWidget{const FoodNotifications({super.key});@override Widget build(BuildContext c)=>FoodPage('Notifications',(c)=>ListView(padding:const EdgeInsets.all(20),children:[heading('A little inspiration'),for(final n in [('Your next favorite awaits','Browse fresh Ethiopian dishes and a coffee break close to home.'),('ETB 100 off your food','Use ZEMEN100 on a food subtotal of ETB 500 or more.')])InkWell(onTap:()=>push(c,const FoodCoupons()),child:box(ListTile(contentPadding:EdgeInsets.zero,leading:const CircleAvatar(backgroundColor:AppColors.primaryFixed,child:Icon(Icons.notifications_none,color:blue)),title:Text(n.$1,style:const TextStyle(fontWeight:FontWeight.w700)),subtitle:Text(n.$2)))),for(final o in FoodStore.instance.orders)ListTile(onTap:()=>push(c,FoodOrderDetails(o)),leading:const Icon(Icons.delivery_dining,color:blue),title:Text(o.status),subtitle:Text(restaurantById(o.restaurantId).name)),demo()]));}
+class FoodProfile extends StatelessWidget{const FoodProfile({super.key});@override Widget build(BuildContext c){final s=FoodStore.instance;return Column(crossAxisAlignment:CrossAxisAlignment.start,children:[heading('Your food corner'),Container(width:double.infinity,padding:const EdgeInsets.all(24),decoration:BoxDecoration(gradient:const LinearGradient(colors:[blue,Color(0xFF417DFF)]),borderRadius:BorderRadius.circular(24)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[CircleAvatar(backgroundColor:Colors.white,child:Text(DemoStore.instance.initials,style:const TextStyle(color:blue,fontWeight:FontWeight.w800))),const SizedBox(height:14),Text(DemoStore.instance.name,style:const TextStyle(color:Colors.white,fontSize:24,fontWeight:FontWeight.w800)),const SizedBox(height:8),Text('${s.points} points · Food explorer',style:const TextStyle(color:Colors.white70)),const SizedBox(height:16),LinearProgressIndicator(value:(s.points/200).clamp(0,1),color:Colors.white,backgroundColor:Colors.white24)])),const SizedBox(height:20),for(final item in [(Icons.favorite_border,'Favorites',const FoodFavorites()),(Icons.location_on_outlined,'Delivery addresses',const FoodAddress()),(Icons.local_offer_outlined,'Coupons',const FoodCoupons()),(Icons.workspace_premium_outlined,'Rewards',const FoodRewards()),(Icons.support_agent,'Help & support',const FoodSupport())])ListTile(contentPadding:EdgeInsets.zero,leading:Icon(item.$1,color:blue),title:Text(item.$2),trailing:const Icon(Icons.chevron_right,size:20),onTap:()=>push(c,item.$3)),box(const Text('English · ETB · Addis Ababa\nFood orders are saved on this device.',style:TextStyle(color:muted,height:1.7)))]);}}
+class FoodRewards extends StatelessWidget{const FoodRewards({super.key});@override Widget build(BuildContext c){final s=FoodStore.instance;return FoodPage('Rewards',(c)=>ListView(padding:const EdgeInsets.all(20),children:[heading('Good food. Little rewards.'),box(Column(crossAxisAlignment:CrossAxisAlignment.start,children:[tag('FOOD EXPLORER'),const SizedBox(height:20),Text('${s.points} points',style:const TextStyle(fontSize:36,fontWeight:FontWeight.w800,color:blue)),const SizedBox(height:12),const Text('20 demo points for every delivered order.'),const SizedBox(height:20),LinearProgressIndicator(value:(s.points/200).clamp(0,1)),const SizedBox(height:12),Text('${(200-s.points).clamp(0,200)} points to the next tier',style:const TextStyle(color:muted))])),heading('Your rewards'),const Text('Points demonstrate the loyalty journey. They have no cash value and cannot be transferred or redeemed in this demo.',style:TextStyle(color:muted,height:1.6)),demo()]));}}
+class FoodSupport extends StatelessWidget{const FoodSupport({super.key});@override Widget build(BuildContext c)=>FoodPage('Food help & support',(c)=>ListView(padding:const EdgeInsets.all(20),children:[heading('We’re here to help.'),for(final faq in [('Where is my food?','Open Orders and select your active order. The demo button walks through acceptance, preparation, courier pickup and delivery.'),('Can I cancel?','Cancel before preparation starts. Later stages need support. This demo does not contact a restaurant or courier.'),('How do payments work?','Cash and Chapa are simulated. No money is collected. The receipt retains the prices and delivery address used at checkout.'),('Can I use my own address?','Yes. Choose Delivery addresses and enter your area, building and a helpful landmark in Addis Ababa.')])box(ExpansionTile(tilePadding:EdgeInsets.zero,title:Text(faq.$1,style:const TextStyle(fontWeight:FontWeight.w700)),children:[Padding(padding:const EdgeInsets.symmetric(vertical:12),child:Text(faq.$2,style:const TextStyle(color:muted,height:1.5)))])),demo()]));}
